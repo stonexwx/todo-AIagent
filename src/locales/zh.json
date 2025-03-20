@@ -1,0 +1,16 @@
+{
+  "quadrant": {
+    "urgent_important": "紧急且重要",
+    "important_not_urgent": "重要不紧急",
+    "urgent_not_important": "紧急不重要",
+    "not_urgent_not_important": "不紧急不重要"
+  },
+  "actions": {
+    "complete_task": "完成任务",
+    "edit_task": "编辑任务",
+    "delete_task": "删除任务"
+  },
+  "statistics": {
+    "title": "任务统计"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "actions": {
+    "complete_task": "Complete task",
+    "edit_task": "Edit task",
+    "delete_task": "Delete task"
+  },
+  "quadrant": {
+    "urgent_important": "Urgent & Important",
+    "important_not_urgent": "Important Not Urgent",
+    "urgent_not_important": "Urgent Not Important",
+    "not_urgent_not_important": "Not Urgent & Not Important"
+  },
+  "statistics": {
+    "title": "Task Statistics"
+  }
+}

@@ -1,0 +1,17 @@
+@import './styles/variables';
+
+.base-button {
+  @apply px-4 py-2 rounded-md transition-all duration-200;
+}
+
+.base-card {
+  @apply bg-surface-100 rounded-lg p-4 shadow-base;
+}
+
+.task-card {
+  @apply bg-surface-200 mb-2;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-sm text-xs;
+}

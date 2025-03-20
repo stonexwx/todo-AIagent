@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { DatePicker, Button, Typography, message, Tabs, Radio, Input, Select, Spin } from 'antd';
-import type { RadioChangeEvent } from 'antd';
-import dayjs from 'dayjs';
-import { invoke } from '@tauri-apps/api/core';
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import dayjs from "dayjs";
+import { message } from "antd";
 
 // 假设我们有一个任务类型定义
 interface Task {
@@ -12,19 +12,17 @@ interface Task {
   quadrant: number; // 1-4 表示四象限
   createdAt: string;
   completedAt?: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: "pending" | "completed" | "cancelled";
   tags?: string[];
 }
 
 // 报告类型
-type ReportType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+type ReportType = "daily" | "weekly" | "monthly" | "yearly" | "custom";
 
 // 报告格式
-type ReportFormat = 'text' | 'chart';
+type ReportFormat = "text" | "chart";
 
-const { Title } = Typography;
-const { RangePicker } = DatePicker;
-const { TabPane } = Tabs;
+
 
 const Reports: React.FC = () => {
   // 状态管理
