@@ -20,9 +20,7 @@ const BaseCalendar: React.FC<CalendarProps> = ({
   tasks = [],
   onDateClick,
 }) => {
-  const [displayMonth, setDisplayMonth] = useState(
-    currentDate.startOf("month")
-  );
+  const [displayMonth, setDisplayMonth] = useState(currentDate);
 
   // 生成月份切换按钮
   const MonthSwitcher = () => (

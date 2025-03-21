@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
-import { useTaskData } from '../hooks/useTaskData';
+import React, { useState, useEffect } from 'react';
 import StatisticsCard from './common/StatisticsCard';
 import QuadrantStats from './common/QuadrantStats';
-import {
-  DashboardIcon,
-  CalendarIcon,
-  ChartIcon,
-  DocumentIcon,
-} from "../assets/custom-icons";
-import dayjs from "dayjs";
-import { invoke } from "@tauri-apps/api/core";
 import BaseButton from './common/BaseButton';
 import BaseCard from './common/BaseCard';
+import BaseCalendar from './common/BaseCalendar';
+import { Form, Modal, Input, Select } from 'antd';
+import { message } from './common/Message';
+import {
+  FireIcon,
+  CheckCircleIcon,
+  ClockIcon,
+} from "@/assets/custom-icons";
+import dayjs from "dayjs";
+import { invoke } from "@tauri-apps/api/core";
+
+
+const { TextArea } = Input;
+const { Option } = Select;
 
 // 任务类型定义
 interface Task {
@@ -28,11 +33,11 @@ interface Task {
 
 
 const Dashboard: React.FC = () => {
-  // 状态管理
   const [activeTab, setActiveTab] = useState<"day" | "week" | "month" | "year">("week");
-  const { tasks, loading, getFilteredTasks, getStats } = useTaskData(activeTab);
-
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const [form] = Form.useForm();
 
   // 打开任务创建模态框
@@ -85,11 +90,7 @@ const Dashboard: React.FC = () => {
         setTasks(tasks);
       } catch (error) {
         console.error("获取任务数据时出错:", error);
-        message.error({
-  content: '数据加载失败',
-  description: '请检查网络连接后重试',
-  duration: 3
-});
+        message.error('数据加载失败');
 
         // 在开发环境中使用模拟数据作为后备
         if (process.env.NODE_ENV === "development") {
@@ -168,7 +169,7 @@ const Dashboard: React.FC = () => {
     const now = dayjs();
     let startDate;
 
-    switch (timeFrame) {
+    switch (activeTab) {
       case "day":
         startDate = now.startOf("day");
         break;
@@ -191,7 +192,47 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const stats = getStats(getFilteredTasks());
+  // 获取统计数据
+  const getStats = () => {
+    const filteredTasks = getFilteredTasks();
+    const total = filteredTasks.length;
+    const completed = filteredTasks.filter(task => task.status === 'completed').length;
+    const pending = filteredTasks.filter(task => task.status === 'pending').length;
+    const cancelled = filteredTasks.filter(task => task.status === 'cancelled').length;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    const quadrant1 = filteredTasks.filter(task => task.quadrant === 1).length;
+    const quadrant2 = filteredTasks.filter(task => task.quadrant === 2).length;
+    const quadrant3 = filteredTasks.filter(task => task.quadrant === 3).length;
+    const quadrant4 = filteredTasks.filter(task => task.quadrant === 4).length;
+
+    return {
+      total,
+      completed,
+      pending,
+      cancelled,
+      completionRate,
+      quadrant1,
+      quadrant2,
+      quadrant3,
+      quadrant4
+    };
+  };
+
+  // 获取日历标记数据
+  const getMarkedDates = () => {
+    return tasks.reduce((acc, task) => {
+      const dateStr = dayjs(task.createdAt).format('YYYY-MM-DD');
+      return { ...acc, [dateStr]: task.status };
+    }, {});
+  };
+
+  // 处理日期选择
+  const handleDateChange = (date: dayjs.Dayjs) => {
+    setSelectedDate(date);
+  };
+
+  const stats = getStats();
 
   // 渲染任务日历
   const getCalendarData = (value: dayjs.Dayjs) => {
@@ -202,19 +243,6 @@ const Dashboard: React.FC = () => {
     });
 
     return dayTasks;
-  };
-
-  const [selectedDate, setSelectedDate] = useState(dayjs());
-
-  const handleDateChange = (date: dayjs.Dayjs) => {
-    setSelectedDate(date);
-  };
-
-  const getMarkedDates = () => {
-    return tasks.reduce((acc, task) => {
-      const dateStr = dayjs(task.createdAt).format('YYYY-MM-DD');
-      return { ...acc, [dateStr]: task.status };
-    }, {});
   };
 
   // 切换时间范围
@@ -234,7 +262,7 @@ const Dashboard: React.FC = () => {
           {recentTasks.map((task) => (
             <BaseCard
               key={task.id}
-              variant="ghost"
+              variant="surface"
               className="hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start">
@@ -266,20 +294,20 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  const stats = getStats();
+
 
   return (
-    <div className="dashboard-container surface-100">
-      {/* 时间范围切换 */}
-      <div className="flex gap-4 mb-6 timeframe-tabs">
+    <div className="dashboard-container p-6">
+      <div className="flex gap-4 mb-6">
         {['day', 'week', 'month', 'year'].map((tab) => (
-          <button
+          <BaseButton
             key={tab}
-            className={`tab-button ${activeTab === tab ? 'active' : ''}`}
+            variant={activeTab === tab ? 'primary' : 'secondary'}
+            size="md"
             onClick={() => setActiveTab(tab as typeof activeTab)}
           >
             {{ day: '日', week: '周', month: '月', year: '年' }[tab]}
-          </button>
+          </BaseButton>
         ))}
       </div>
 
@@ -310,193 +338,81 @@ const Dashboard: React.FC = () => {
           color="#cf1322"
         />
       </div>
-      <QuadrantStats quadrantCounts={[
-        stats.quadrant1,
-        stats.quadrant2,
-        stats.quadrant3,
-        stats.quadrant4
-      ]} />
+
+      {/* 四象限统计 */}
+      <BaseCard variant="surface" className="mb-6">
+        <QuadrantStats quadrantCounts={[
+          stats.quadrant1,
+          stats.quadrant2,
+          stats.quadrant3,
+          stats.quadrant4
+        ]} />
+      </BaseCard>
 
       {/* 最近任务列表 */}
-      <div className="task-list surface-100 p-4 radius-lg shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-4">最近任务</h3>
-        <div className="flex flex-col gap-3">
-          {filteredTasks.slice(0, 5).map((task) => (
-            <div key={task.id} className="task-card surface-200 p-3 radius-md hover:surface-300 transition">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium mb-1">{task.title}</h4>
-                  <p className="text-secondary text-sm">{task.description}</p>
-                </div>
-                <span className={`status-badge ${task.status}`}>
-                  {{ completed: '完成', pending: '进行中', cancelled: '取消' }[task.status]}
-                </span>
-              </div>
-              <div className="flex gap-2 mt-2">
-                {task.tags?.map((tag) => (
-                  <span key={tag} className="tag surface-400 text-xs px-2 py-1 radius-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <Col xs={24} sm={12} md={6} lg={6} xl={6}>
-        <Card className="stats-card">
-          <Statistic
-            title="已完成"
-            value={stats.completed}
-            prefix={<CheckCircleOutlined />}
-            valueStyle={{ color: "#3f8600" }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={12} md={6} lg={6} xl={6}>
-        <Card className="stats-card">
-          <Statistic
-            title="进行中"
-            value={stats.pending}
-            prefix={<ClockCircleOutlined />}
-            valueStyle={{ color: "#1890ff" }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={12} md={6} lg={6} xl={6}>
-        <Card className="stats-card">
-          <Statistic
-            title="完成率"
-            value={stats.completionRate}
-            suffix="%"
-            precision={0}
-            valueStyle={{ color: "#3f8600" }}
-          />
-        </Card>
-      </Col>
-    </Row>
+      {renderRecentTasks()}
 
-    <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-      <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-        <Card title="四象限分布">
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Statistic
-                title="重要且紧急"
-                value={stats.quadrant1}
-                valueStyle={{ color: "#cf1322" }}
-              />
-            </Col>
-            <Col span={12}>
-              <Statistic
-                title="重要但不紧急"
-                value={stats.quadrant2}
-                valueStyle={{ color: "#1890ff" }}
-              />
-            </Col>
-            <Col span={12}>
-              <Statistic
-                title="紧急但不重要"
-                value={stats.quadrant3}
-                valueStyle={{ color: "#faad14" }}
-              />
-            </Col>
-            <Col span={12}>
-              <Statistic
-                title="既不重要也不紧急"
-                value={stats.quadrant4}
-                valueStyle={{ color: "#52c41a" }}
-              />
-            </Col>
-          </Row>
-        </Card>
-      </Col>
-      <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-        <Card title="最近任务">{renderRecentTasks()}</Card>
-      </Col>
-    </Row>
+      {/* 任务日历 */}
+      <BaseCard variant="surface" className="mb-6">
+        <BaseCalendar
+          currentDate={selectedDate}
+          markedDates={getMarkedDates()}
+          onDateClick={handleDateChange}
+          tasks={tasks.map(task => ({
+            date: task.createdAt,
+            status: task.status
+          }))}
+        />
+      </BaseCard>
 
-    <Row style={{ marginTop: 16 }}>
-      <Col span={24} className="chart-column">
-        <Card title="任务日历">
-          <BaseCalendar
-            currentDate={selectedDate}
-            markedDates={getMarkedDates()}
-            onDateClick={handleDateChange}
-            className="min-h-[500px] rounded-xl"
-          />
-        </Card>
-      </Col>
-    </Row>
-    <Modal
-      title={"新建任务"}
-      open={modalVisible}
-      onOk={handleSaveTask}
-      onCancel={() => setModalVisible(false)}
+      {/* 任务创建模态框 */}
+      <Modal
+        title="新建任务"
+        open={modalVisible}
+        onOk={handleSaveTask}
+        onCancel={() => setModalVisible(false)}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="title"
+            label="任务标题"
+            rules={[{ required: true, message: "请输入任务标题" }]}
+          >
+            <Input placeholder="请输入任务标题" />
+          </Form.Item>
+
+          <Form.Item name="description" label="任务描述">
+            <TextArea rows={4} placeholder="请输入任务描述" />
+          </Form.Item>
+
+          <Form.Item
+            name="quadrant"
+            label="所属象限"
+            rules={[{ required: true, message: "请选择所属象限" }]}
+          >
+            <Select>
+              <Option value={1}>第一象限：重要且紧急</Option>
+              <Option value={2}>第二象限：重要但不紧急</Option>
+              <Option value={3}>第三象限：紧急但不重要</Option>
+              <Option value={4}>第四象限：既不重要也不紧急</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="tags" label="标签">
+            <Input placeholder="多个标签用逗号分隔" />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <BaseButton
+        data-testid="create-task-button"
+        variant="primary"
+        onClick={openTaskModal}
     >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          name="title"
-          label="任务标题"
-          rules={[{ required: true, message: "请输入任务标题" }]}
-        >
-          <Input placeholder="请输入任务标题" />
-        </Form.Item>
+      新建任务
+    </BaseButton>
+    </div>
+  );
+};
 
-        <Form.Item name="description" label="任务描述">
-          <TextArea rows={4} placeholder="请输入任务描述" />
-        </Form.Item>
-
-        <Form.Item
-          name="quadrant"
-          label="所属象限"
-          rules={[{ required: true, message: "请选择所属象限" }]}
-        >
-          <Select>
-            <Option value={1}>第一象限：重要且紧急</Option>
-            <Option value={2}>第二象限：重要但不紧急</Option>
-            <Option value={3}>第三象限：紧急但不重要</Option>
-            <Option value={4}>第四象限：既不重要也不紧急</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item name="tags" label="标签">
-          <Input placeholder="多个标签用逗号分隔" />
-        </Form.Item>
-      </Form>
-    </Modal>
-  </div>
-);
 
 export default Dashboard;
-
-
-// 新增日历组件导入
-import BaseCalendar from './common/BaseCalendar';
-
-// 移除旧的日历状态和逻辑
-const CalendarSection = () => (
-  <BaseCard title="任务日历" variant="surface" className="mb-6">
-    <BaseCalendar
-      selectedDate={selectedDate}
-      onDateChange={(date) => setSelectedDate(date)}
-      markedDates={tasks.map(task => dayjs(task.createdAt).format('YYYY-MM-DD'))}
-      className="min-h-[400px]"
-    />
-  </BaseCard>
-);
-
-// 更新主布局结构
-return (
-  <div className="dashboard-container p-6">
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <StatsGrid stats={stats} />
-        <CalendarSection />
-      </div>
-      <div className="lg:col-span-1">
-        {renderRecentTasks()}
-      </div>
-    </div>
-  </div>
-);

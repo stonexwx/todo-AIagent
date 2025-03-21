@@ -2,32 +2,11 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { invoke } from '@tauri-apps/api/core';
 import { t } from 'i18next';
+import BaseCard from './common/BaseCard';
+import BaseButton from './common/BaseButton';
 
-// 自定义图标组件
-const PlusIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
+import { PlusIcon, EditIcon, DeleteIcon, CheckIcon } from '@/assets/custom-icons';
 
-const EditIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" strokeWidth="2"/>
-    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2"/>
-  </svg>
-);
-
-const DeleteIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" strokeWidth="2"/>
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
 
 // 任务类型定义
 interface Task {
@@ -45,6 +24,7 @@ const QuadrantTasks: React.FC = () => {
   // 状态管理
   const [tasks, setTasks] = useState<Task[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [saving, setSaving] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [form] = useState<{
     getFieldValue: (field: string) => any;
@@ -58,7 +38,7 @@ const QuadrantTasks: React.FC = () => {
     validateFields: async () => ({}),
   }));
 
-  const [saving, setSaving] = useState(false);
+  
 
   // 从后端获取任务数据
   useEffect(() => {
@@ -144,13 +124,14 @@ const QuadrantTasks: React.FC = () => {
     }, 3000);
   };
 
-  const [saving, setSaving] = useState(false);
+  
 
   // 保存任务
   const handleSaveTask = async () => {
     try {
       setSaving(true);
       const values = await form.validateFields();
+    setModalVisible(true);
       const { title, description, quadrant, status, tags } = values;
       
       const tagsArray = tags ? tags.split(',').map((tag: string) => tag.trim()) : [];
@@ -229,15 +210,16 @@ const QuadrantTasks: React.FC = () => {
     const quadrantTasks = getTasksByQuadrant(quadrant);
     
     return (
-      <div className="task-card">
-        <div className="card-header">
-          <h4 className="card-title">{title}</h4>
-          <button 
-            className="button button-icon" 
+      <BaseCard
+        title={title}
+      >
+        <div className="flex justify-end mb-4">
+          <BaseButton
+            variant="primary"
             onClick={() => openTaskModal({ quadrant } as any)}
           >
             <PlusIcon />
-          </button>
+          </BaseButton>
         </div>
         <div className="task-list">
           {quadrantTasks.map(task => (
@@ -257,144 +239,107 @@ const QuadrantTasks: React.FC = () => {
                 </span>
                 <div className="task-actions">
                   {task.status === 'pending' && (
-                    <button
-                      className="button button-icon"
+                    <BaseButton
+                      variant="primary"
                       onClick={() => handleCompleteTask(task.id)}
-                      title={t("actions.complete_task")}
+                      aria-label="完成任务"
                     >
                       <CheckIcon />
-                    </button>
+                    </BaseButton>
                   )}
-                  <button
-                    className="button button-icon"
+                  <BaseButton
+                    variant="primary"
                     onClick={() => openTaskModal(task)}
-                    title={t("actions.edit_task")}
+                    aria-label={t("actions.edit_task")}
                   >
                     <EditIcon />
-                  </button>
-                  <button
-                    className="button button-icon"
+                  </BaseButton>
+                  <BaseButton
+                    variant="primary"
                     onClick={() => handleDeleteTask(task.id)}
-                    title={t("actions.delete_task")}
+                    aria-label="删除任务"
                   >
                     <DeleteIcon />
-                  </button>
+                  </BaseButton>
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </BaseCard>
     );
   };
 
   return (
-    <div className="task-grid-container">
-      <div className="grid">
-        <div className="col">
-          <div className="row">
-            {renderTaskList(1, '重要且紧急')}
-          </div>
-          <div className="row">
-            {renderTaskList(3, '紧急但不重要')}
-          </div>
-        </div>
-        <div className="col">
-          <div className="row">
-            {renderTaskList(2, '重要但不紧急')}
-          </div>
-          <div className="row">
-            {renderTaskList(4, '既不重要也不紧急')}
-          </div>
-        </div>
+    <div className="quadrant-container">
+      <div className="quadrant-grid">
+        {[1, 2, 3, 4].map(quadrant => renderTaskList(quadrant, `象限 ${quadrant}`))}
       </div>
-
       {modalVisible && (
-        <div className="modal-overlay" onClick={() => setModalVisible(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">{editingTask ? '编辑任务' : '新建任务'}</h2>
-              <button
-                className="modal-close"
+        <div className="modal">
+          <form onSubmit={e => {
+            e.preventDefault();
+            handleSaveTask();
+          }}>
+            <div className="form-group">
+              <label htmlFor="title">标题</label>
+              <input
+                id="title"
+                value={form.getFieldValue('title')}
+                onChange={e => form.setFieldsValue({ title: e.target.value })}
+                placeholder="请输入任务标题"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="description">描述</label>
+              <textarea
+                id="description"
+                value={form.getFieldValue('description')}
+                onChange={e => form.setFieldsValue({ description: e.target.value })}
+                placeholder="请输入任务描述"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="quadrant">象限</label>
+              <select
+                id="quadrant"
+                value={form.getFieldValue('quadrant')}
+                onChange={e => form.setFieldsValue({ quadrant: parseInt(e.target.value) })}
+              >
+                {[1, 2, 3, 4].map(q => (
+                  <option key={q} value={q}>象限 {q}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="tags">标签</label>
+              <input
+                id="tags"
+                value={form.getFieldValue('tags')}
+                onChange={e => form.setFieldsValue({ tags: e.target.value })}
+                placeholder="使用逗号分隔多个标签"
+              />
+            </div>
+            <div className="form-actions">
+              <BaseButton
+                variant="secondary"
                 onClick={() => setModalVisible(false)}
               >
-                ×
-              </button>
+                取消
+              </BaseButton>
+              <BaseButton
+                variant="primary"
+                onClick={handleSaveTask}
+                disabled={saving}
+              >
+                {saving ? '保存中...' : '保存'}
+              </BaseButton>
             </div>
-            <form className="form" onSubmit={e => { e.preventDefault(); handleSaveTask(); }}>
-              <div className="form-item">
-                <label className="form-label">{t("form.title")}</label>
-                <input
-                  className="form-input"
-                  value={form.getFieldValue('title') || ''}
-                  onChange={e => form.setFieldsValue({ title: e.target.value })}
-                  placeholder={t("form.title_placeholder")}
-                  required
-                />
-              </div>
-
-              <div className="form-item">
-                <label className="form-label">{t("form.description")}</label>
-                <textarea
-                  className="form-input"
-                  rows={4}
-                  value={form.getFieldValue('description') || ''}
-                  onChange={e => form.setFieldsValue({ description: e.target.value })}
-                  placeholder={t("form.description_placeholder")}
-                />
-              </div>
-
-              <div className="form-item">
-                <label className="form-label">{t("form.quadrant")}</label>
-                <select
-                  className="form-select"
-                  value={form.getFieldValue('quadrant') || 1}
-                  onChange={e => form.setFieldsValue({ quadrant: Number(e.target.value) })}
-                  required
-                >
-                  <option value={1}>{t("quadrant.urgent_important")}</option>
-                  <option value={2}>{t("quadrant.important_not_urgent")}</option>
-                  <option value={3}>{t("quadrant.urgent_not_important")}</option>
-                  <option value={4}>{t("quadrant.not_urgent_not_important")}</option>
-                </select>
-              </div>
-
-              <div className="form-item">
-                <label className="form-label">任务状态</label>
-                <select
-                  className="form-select"
-                  value={form.getFieldValue('status') || 'pending'}
-                  onChange={e => form.setFieldsValue({ status: e.target.value })}
-                  required
-                >
-                  <option value="pending">{t("status.pending")}</option>
-                  <option value="completed">{t("status.completed")}</option>
-                  <option value="cancelled">{t("status.cancelled")}</option>
-                </select>
-              </div>
-
-              <div className="form-actions">
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  onClick={() => setModalVisible(false)}
-                >
-                  {t("actions.cancel")}
-                </button>
-                <button
-                  type="submit"
-                  className="button button-primary"
-                  disabled={saving}
-                >
-                  {t("actions.save_task")}
-                </button>
-              </div>
-            </form>
-          </div>
+          </form>
         </div>
-      </div>
-    );
-  };
+      )}
+    </div>
+  );
 };
 
 export default QuadrantTasks;

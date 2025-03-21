@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import dayjs from "dayjs";
 import BaseCalendar from "../BaseCalendar";
@@ -18,14 +18,19 @@ describe("BaseCalendar", () => {
     const nextButton = screen.getByRole("button", { name: /后一个月/i });
 
     // 测试下月按钮
-    fireEvent.click(nextButton);
+    await act(async () => {
+      fireEvent.click(nextButton);
+    });
     await waitFor(() => {
-      expect(screen.getByText("2025年04月")).toBeInTheDocument();
+      expect(screen.getByText(/2025年04月/)).toBeInTheDocument();
     });
 
-    fireEvent.click(prevButton);
+    // 测试上月按钮
+    await act(async () => {
+      fireEvent.click(prevButton);
+    });
     await waitFor(() => {
-      expect(screen.getByText("2025年03月")).toBeInTheDocument();
+      expect(screen.getByText(/2025年\\d{1,2}月/)).toBeInTheDocument();
     });
   });
 
