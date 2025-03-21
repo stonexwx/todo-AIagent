@@ -12,6 +12,8 @@ interface BaseButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   "aria-label"?: string;
+  loading?: boolean;
+  icon?: React.ReactNode;
 }
 
 const BaseButton: React.FC<BaseButtonProps> = ({

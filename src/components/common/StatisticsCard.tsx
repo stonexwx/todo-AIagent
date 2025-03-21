@@ -1,6 +1,6 @@
 import React from "react";
 import BaseCard from "./BaseCard";
-import { Statistic } from "antd";
+import BaseStatistic from "./BaseStatistic";
 
 interface StatisticsCardProps {
   title: string;
@@ -21,18 +21,16 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
     <BaseCard className={`p-4 ${className}`}>
       <div className="flex items-center gap-3">
         <div
-          className="flex items-center justify-center w-10 h-10 rounded-full"
-          style={{ backgroundColor: color + "20" }}
+          className={`flex items-center justify-center w-10 h-10 rounded-full bg-[${color}]/20`}
         >
           {React.cloneElement(icon as React.ReactElement, {
-            style: { color, fontSize: "18px" },
+            className: `text-[${color}] text-lg`,
           })}
         </div>
-        <Statistic
+        <BaseStatistic
           title={title}
           value={value}
-          valueStyle={{ color }}
-          className="m-0"
+          className={`m-0 text-[${color}]`}
         />
       </div>
     </BaseCard>

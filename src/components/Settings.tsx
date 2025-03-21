@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { SaveIcon, ApiIcon, GitHubIcon } from "../assets/custom-icons";
 import { invoke } from "@tauri-apps/api/core";
-import { message } from "antd";
+import { message } from "./common/Message";
 import BaseButton from "./common/BaseButton";
 import BaseCard from "./common/BaseCard";
 

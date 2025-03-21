@@ -19,6 +19,7 @@ interface BaseCardProps {
   children: React.ReactNode;
   hoverEffect?: boolean;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  icon?: React.ReactNode;
 }
 
 const BaseCard: React.FC<BaseCardProps> = ({

@@ -3,20 +3,14 @@ import StatisticsCard from './common/StatisticsCard';
 import QuadrantStats from './common/QuadrantStats';
 import BaseButton from './common/BaseButton';
 import BaseCard from './common/BaseCard';
-import BaseCalendar from './common/BaseCalendar';
-import { Form, Modal, Input, Select } from 'antd';
-import { message } from './common/Message';
-import {
-  FireIcon,
-  CheckCircleIcon,
-  ClockIcon,
-} from "@/assets/custom-icons";
+import BaseCalendar from "./common/BaseCalendar";
+
+import Message from "./common/Message";
+import BaseForm from "./common/BaseForm";
+import { FireIcon, CheckCircleIcon, ClockIcon } from "@/assets/custom-icons";
 import dayjs from "dayjs";
+
 import { invoke } from "@tauri-apps/api/core";
-
-
-const { TextArea } = Input;
-const { Option } = Select;
 
 // 任务类型定义
 interface Task {
@@ -30,15 +24,15 @@ interface Task {
   tags?: string[];
 }
 
-
-
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"day" | "week" | "month" | "year">("week");
+  const [activeTab, setActiveTab] = useState<"day" | "week" | "month" | "year">(
+    "week"
+  );
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [form] = Form.useForm();
+  const [form] = BaseForm.useForm();
 
   // 打开任务创建模态框
   const openTaskModal = () => {
@@ -71,12 +65,12 @@ const Dashboard: React.FC = () => {
       // 重新获取任务列表
       const updatedTasks = await invoke<Task[]>("get_tasks");
       setTasks(updatedTasks);
-      message.success("任务已创建");
+      Message.success("任务已创建");
 
       setModalVisible(false);
     } catch (error) {
       console.error("保存任务时出错:", error);
-      message.error("保存任务失败，请稍后重试");
+      Message.error("保存任务失败，请稍后重试");
     }
   };
 
@@ -90,7 +84,7 @@ const Dashboard: React.FC = () => {
         setTasks(tasks);
       } catch (error) {
         console.error("获取任务数据时出错:", error);
-        message.error('数据加载失败');
+        Message.error("数据加载失败");
 
         // 在开发环境中使用模拟数据作为后备
         if (process.env.NODE_ENV === "development") {
@@ -196,15 +190,30 @@ const Dashboard: React.FC = () => {
   const getStats = () => {
     const filteredTasks = getFilteredTasks();
     const total = filteredTasks.length;
-    const completed = filteredTasks.filter(task => task.status === 'completed').length;
-    const pending = filteredTasks.filter(task => task.status === 'pending').length;
-    const cancelled = filteredTasks.filter(task => task.status === 'cancelled').length;
-    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const completed = filteredTasks.filter(
+      (task) => task.status === "completed"
+    ).length;
+    const pending = filteredTasks.filter(
+      (task) => task.status === "pending"
+    ).length;
+    const cancelled = filteredTasks.filter(
+      (task) => task.status === "cancelled"
+    ).length;
+    const completionRate =
+      total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    const quadrant1 = filteredTasks.filter(task => task.quadrant === 1).length;
-    const quadrant2 = filteredTasks.filter(task => task.quadrant === 2).length;
-    const quadrant3 = filteredTasks.filter(task => task.quadrant === 3).length;
-    const quadrant4 = filteredTasks.filter(task => task.quadrant === 4).length;
+    const quadrant1 = filteredTasks.filter(
+      (task) => task.quadrant === 1
+    ).length;
+    const quadrant2 = filteredTasks.filter(
+      (task) => task.quadrant === 2
+    ).length;
+    const quadrant3 = filteredTasks.filter(
+      (task) => task.quadrant === 3
+    ).length;
+    const quadrant4 = filteredTasks.filter(
+      (task) => task.quadrant === 4
+    ).length;
 
     return {
       total,
@@ -215,14 +224,14 @@ const Dashboard: React.FC = () => {
       quadrant1,
       quadrant2,
       quadrant3,
-      quadrant4
+      quadrant4,
     };
   };
 
   // 获取日历标记数据
   const getMarkedDates = () => {
     return tasks.reduce((acc, task) => {
-      const dateStr = dayjs(task.createdAt).format('YYYY-MM-DD');
+      const dateStr = dayjs(task.createdAt).format("YYYY-MM-DD");
       return { ...acc, [dateStr]: task.status };
     }, {});
   };
@@ -255,7 +264,7 @@ const Dashboard: React.FC = () => {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       .slice(0, 5);
-  
+
     return (
       <BaseCard title="最近任务" variant="surface" className="mb-6">
         <div className="grid gap-4">
@@ -267,13 +276,15 @@ const Dashboard: React.FC = () => {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <div className={`text-medium ${
-                    task.status === 'completed' ? 'line-through' : ''
-                  } ${task.status === 'cancelled' ? 'text-gray-500' : ''}`}>
+                  <div
+                    className={`text-medium ${
+                      task.status === "completed" ? "line-through" : ""
+                    } ${task.status === "cancelled" ? "text-gray-500" : ""}`}
+                  >
                     {task.title}
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    {dayjs(task.createdAt).format('YYYY-MM-DD HH:mm')}
+                    {dayjs(task.createdAt).format("YYYY-MM-DD HH:mm")}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -294,19 +305,17 @@ const Dashboard: React.FC = () => {
     );
   };
 
-
-
   return (
     <div className="dashboard-container p-6">
       <div className="flex gap-4 mb-6">
-        {['day', 'week', 'month', 'year'].map((tab) => (
+        {["day", "week", "month", "year"].map((tab) => (
           <BaseButton
             key={tab}
-            variant={activeTab === tab ? 'primary' : 'secondary'}
+            variant={activeTab === tab ? "primary" : "secondary"}
             size="md"
             onClick={() => setActiveTab(tab as typeof activeTab)}
           >
-            {{ day: '日', week: '周', month: '月', year: '年' }[tab]}
+            {{ day: "日", week: "周", month: "月", year: "年" }[tab]}
           </BaseButton>
         ))}
       </div>
@@ -341,12 +350,14 @@ const Dashboard: React.FC = () => {
 
       {/* 四象限统计 */}
       <BaseCard variant="surface" className="mb-6">
-        <QuadrantStats quadrantCounts={[
-          stats.quadrant1,
-          stats.quadrant2,
-          stats.quadrant3,
-          stats.quadrant4
-        ]} />
+        <QuadrantStats
+          quadrantCounts={[
+            stats.quadrant1,
+            stats.quadrant2,
+            stats.quadrant3,
+            stats.quadrant4,
+          ]}
+        />
       </BaseCard>
 
       {/* 最近任务列表 */}
@@ -358,58 +369,58 @@ const Dashboard: React.FC = () => {
           currentDate={selectedDate}
           markedDates={getMarkedDates()}
           onDateClick={handleDateChange}
-          tasks={tasks.map(task => ({
+          tasks={tasks.map((task) => ({
             date: task.createdAt,
-            status: task.status
+            status: task.status,
           }))}
         />
       </BaseCard>
 
       {/* 任务创建模态框 */}
-      <Modal
+      <BaseModal
         title="新建任务"
-        open={modalVisible}
-        onOk={handleSaveTask}
-        onCancel={() => setModalVisible(false)}
+        visible={modalVisible}
+        onConfirm={handleSaveTask}
+        onClose={() => setModalVisible(false)}
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
+        <BaseForm form={form} layout="vertical">
+          <BaseForm.Item
             name="title"
             label="任务标题"
             rules={[{ required: true, message: "请输入任务标题" }]}
           >
-            <Input placeholder="请输入任务标题" />
+            <BaseInput placeholder="请输入任务标题" />
           </Form.Item>
 
-          <Form.Item name="description" label="任务描述">
-            <TextArea rows={4} placeholder="请输入任务描述" />
+          <BaseForm.Item name="description" label="任务描述">
+            <BaseTextArea rows={4} placeholder="请输入任务描述" />
           </Form.Item>
 
-          <Form.Item
+          <BaseForm.Item
             name="quadrant"
             label="所属象限"
             rules={[{ required: true, message: "请选择所属象限" }]}
           >
-            <Select>
-              <Option value={1}>第一象限：重要且紧急</Option>
-              <Option value={2}>第二象限：重要但不紧急</Option>
-              <Option value={3}>第三象限：紧急但不重要</Option>
-              <Option value={4}>第四象限：既不重要也不紧急</Option>
-            </Select>
-          </Form.Item>
+            <BaseSelect>
+              <BaseSelect.Option value={1}>第一象限：重要且紧急</BaseSelect.Option>
+              <BaseSelect.Option value={2}>第二象限：重要但不紧急</BaseSelect.Option>
+              <BaseSelect.Option value={3}>第三象限：紧急但不重要</BaseSelect.Option>
+              <BaseSelect.Option value={4}>第四象限：既不重要也不紧急</BaseSelect.Option>
+            </BaseSelect>
+          </BaseForm.Item>
 
-          <Form.Item name="tags" label="标签">
-            <Input placeholder="多个标签用逗号分隔" />
-          </Form.Item>
-        </Form>
-      </Modal>
+          <BaseForm.Item name="tags" label="标签">
+            <BaseInput placeholder="多个标签用逗号分隔" />
+          </BaseForm.Item>
+        </BaseForm>
+      </BaseModal>
       <BaseButton
         data-testid="create-task-button"
         variant="primary"
         onClick={openTaskModal}
-    >
-      新建任务
-    </BaseButton>
+      >
+        新建任务
+      </BaseButton>
     </div>
   );
 };

@@ -9,7 +9,8 @@
       "@/assets/*": ["./src/assets/*"],
       "@/components/*": ["./src/components/*"],
       "@/hooks/*": ["./src/hooks/*"],
-      "@/locales/*": ["./src/locales/*"]
+      "@/locales/*": ["./src/locales/*"],
+      "@/mocks/*": ["./__mocks__/*"]
     },
     "strict": true,
     "forceConsistentCasingInFileNames": true
