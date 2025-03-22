@@ -111,4 +111,14 @@ export const message = {
     showMessage({ type: 'info', content, duration }),
 };
 
+// 添加静态方法到Message组件
+Message.success = (content: string, duration?: number) =>
+  showMessage({ type: 'success', content, duration });
+Message.warning = (content: string, duration?: number) =>
+  showMessage({ type: 'warning', content, duration });
+Message.error = (content: string, duration?: number) =>
+  showMessage({ type: 'error', content, duration });
+Message.info = (content: string, duration?: number) =>
+  showMessage({ type: 'info', content, duration });
+
 export default Message;

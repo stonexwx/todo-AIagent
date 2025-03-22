@@ -7,6 +7,10 @@ import BaseCalendar from "./common/BaseCalendar";
 
 import Message from "./common/Message";
 import BaseForm from "./common/BaseForm";
+import BaseModal from "./common/BaseModal";
+import BaseInput from "./common/BaseInput";
+import BaseTextArea from "./common/BaseTextArea";
+import BaseSelect from "./common/BaseSelect";
 import { FireIcon, CheckCircleIcon, ClockIcon } from "@/assets/custom-icons";
 import dayjs from "dayjs";
 
@@ -380,8 +384,8 @@ const Dashboard: React.FC = () => {
       <BaseModal
         title="新建任务"
         visible={modalVisible}
-        onConfirm={handleSaveTask}
-        onClose={() => setModalVisible(false)}
+        onOk={handleSaveTask}
+        onCancel={() => setModalVisible(false)}
       >
         <BaseForm form={form} layout="vertical">
           <BaseForm.Item
@@ -390,11 +394,11 @@ const Dashboard: React.FC = () => {
             rules={[{ required: true, message: "请输入任务标题" }]}
           >
             <BaseInput placeholder="请输入任务标题" />
-          </Form.Item>
+          </BaseForm.Item>
 
           <BaseForm.Item name="description" label="任务描述">
             <BaseTextArea rows={4} placeholder="请输入任务描述" />
-          </Form.Item>
+          </BaseForm.Item>
 
           <BaseForm.Item
             name="quadrant"
@@ -402,10 +406,18 @@ const Dashboard: React.FC = () => {
             rules={[{ required: true, message: "请选择所属象限" }]}
           >
             <BaseSelect>
-              <BaseSelect.Option value={1}>第一象限：重要且紧急</BaseSelect.Option>
-              <BaseSelect.Option value={2}>第二象限：重要但不紧急</BaseSelect.Option>
-              <BaseSelect.Option value={3}>第三象限：紧急但不重要</BaseSelect.Option>
-              <BaseSelect.Option value={4}>第四象限：既不重要也不紧急</BaseSelect.Option>
+              <BaseSelect.Option value={1}>
+                第一象限：重要且紧急
+              </BaseSelect.Option>
+              <BaseSelect.Option value={2}>
+                第二象限：重要但不紧急
+              </BaseSelect.Option>
+              <BaseSelect.Option value={3}>
+                第三象限：紧急但不重要
+              </BaseSelect.Option>
+              <BaseSelect.Option value={4}>
+                第四象限：既不重要也不紧急
+              </BaseSelect.Option>
             </BaseSelect>
           </BaseForm.Item>
 
