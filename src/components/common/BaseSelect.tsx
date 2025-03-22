@@ -18,6 +18,8 @@ const Option: React.FC<OptionProps> = ({ value, children }) => {
   return <option value={value}>{children}</option>;
 };
 
+// 声明Option子组件的类型
+
 const BaseSelect: React.FC<SelectProps> = ({
   options,
   value,
@@ -43,7 +45,10 @@ const BaseSelect: React.FC<SelectProps> = ({
   );
 };
 
-// 添加静态方法
-BaseSelect.Option = Option;
+// 使用类型断言将BaseSelect转换为带有Option子组件的组件
+type BaseSelectComponent = React.FC<SelectProps> & {
+  Option: React.FC<OptionProps>;
+};
 
-export default BaseSelect;
+// 添加Option子组件
+(BaseSelect as BaseSelectComponent).Option = Option;

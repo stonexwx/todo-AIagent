@@ -2,81 +2,67 @@
 
 import React from 'react';
 
+// 引入BaseForm组件的接口
+import {
+  FormInstance,
+  FormProps,
+  FormItemProps,
+  BaseFormComponent,
+} from "./BaseForm";
+
 // BaseForm 类型扩展
-declare module './BaseForm' {
-  interface FormInstance {
-    getFieldValue: (field: string) => any;
-    setFieldsValue: (values: any) => void;
-    resetFields: () => void;
-    validateFields: () => Promise<any>;
-  }
+declare module "./BaseForm" {
+  // 在模块扩展中不使用import和export关键字
+  interface FormInstanceType extends FormInstance {}
+  interface FormPropsType extends FormProps {}
+  interface FormItemPropsType extends FormItemProps {}
+  interface BaseFormComponentType extends BaseFormComponent {}
+}
 
-  interface FormItemProps {
-    name?: string;
-    label?: string;
-    rules?: Array<{ required?: boolean; message?: string }>;
-    children?: React.ReactNode;
-  }
+// Message 类型定义
+type MessageType = "success" | "warning" | "error" | "info";
 
-  interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
-    layout?: "horizontal" | "vertical";
-    loading?: boolean;
-    error?: string;
-    form?: FormInstance;
-  }
+interface MessageProps {
+  type: MessageType;
+  content: string;
+  duration?: number;
+  onClose?: () => void;
+  className?: string;
+}
 
-  interface BaseFormComponent extends React.FC<FormProps> {
-    useForm: () => [FormInstance];
-    Item: React.FC<FormItemProps>;
-  }
-
-  const BaseForm: BaseFormComponent;
-  export default BaseForm;
+interface MessageComponent extends React.FC<MessageProps> {
+  success: (content: string, duration?: number) => void;
+  warning: (content: string, duration?: number) => void;
+  error: (content: string, duration?: number) => void;
+  info: (content: string, duration?: number) => void;
 }
 
 // Message 类型扩展
-declare module './Message' {
-  type MessageType = 'success' | 'warning' | 'error' | 'info';
+declare module "./Message" {
+  // 修改变量名以避免与Message.tsx中的Message冲突
+  const MessageUI: MessageComponent;
+}
 
-  interface MessageProps {
-    type: MessageType;
-    content: string;
-    duration?: number;
-    onClose?: () => void;
-    className?: string;
-  }
+// BaseSelect 类型定义
+interface OptionProps {
+  value: string | number;
+  children: React.ReactNode;
+}
 
-  interface MessageComponent extends React.FC<MessageProps> {
-    success: (content: string, duration?: number) => void;
-    warning: (content: string, duration?: number) => void;
-    error: (content: string, duration?: number) => void;
-    info: (content: string, duration?: number) => void;
-  }
+interface SelectProps {
+  options?: Array<{ value: string | number; label: string }>;
+  value?: string | number;
+  onChange?: (value: string | number) => void;
+  placeholder?: string;
+  className?: string;
+  children?: React.ReactNode;
+}
 
-  const Message: MessageComponent;
-  export default Message;
+interface BaseSelectComponent extends React.FC<SelectProps> {
+  Option: React.FC<OptionProps>;
 }
 
 // BaseSelect 类型扩展
-declare module './BaseSelect' {
-  interface OptionProps {
-    value: string | number;
-    children: React.ReactNode;
-  }
-
-  interface SelectProps {
-    options?: Array<{ value: string | number; label: string }>;
-    value?: string | number;
-    onChange?: (value: string | number) => void;
-    placeholder?: string;
-    className?: string;
-    children?: React.ReactNode;
-  }
-
-  interface BaseSelectComponent extends React.FC<SelectProps> {
-    Option: React.FC<OptionProps>;
-  }
-
+declare module "./BaseSelect" {
   const BaseSelect: BaseSelectComponent;
-  export default BaseSelect;
 }

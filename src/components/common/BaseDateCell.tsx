@@ -5,6 +5,11 @@ type DateCellProps = {
   date: dayjs.Dayjs;
   status?: "completed" | "pending" | "cancelled";
   onClick?: () => void;
+  value?: dayjs.Dayjs | null;
+  onChange?: (date: dayjs.Dayjs | null) => void;
+  minDate?: dayjs.Dayjs | null;
+  maxDate?: dayjs.Dayjs;
+  placeholder?: string;
 };
 
 const BaseDateCell: React.FC<DateCellProps> = ({ date, status, onClick }) => (

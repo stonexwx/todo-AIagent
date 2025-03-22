@@ -8,11 +8,13 @@ import { invoke, mockSuccessResponse, mockErrorResponse } from "@/mocks/api";
 import { setupBrowserMocks } from "@/mocks/browser";
 import { message } from "./common/Message";
 
-
+// Mock message组件
+jest.mock("./common/Message", () => ({
   message: {
     error: jest.fn(),
     success: jest.fn(),
-  },
+    info: jest.fn()
+  }
 }));
 
 beforeEach(() => {

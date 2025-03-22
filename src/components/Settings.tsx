@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-import { SaveIcon, ApiIcon, GitHubIcon } from "../assets/custom-icons";
+import { SaveIcon, ApiIcon, GitHubIcon } from "@/assets/custom-icons";
 import { invoke } from "@tauri-apps/api/core";
 import { message } from "./common/Message";
 import BaseButton from "./common/BaseButton";
 import BaseCard from "./common/BaseCard";
+import BaseInput from "./common/BaseInput";
 
 // 本地定义Task接口，与后端保持一致
 interface Task {
@@ -84,13 +85,10 @@ const Settings: React.FC<SettingsProps> = () => {
       localStorage.setItem("dark_mode", darkMode.toString());
       localStorage.setItem("language", language);
 
-      message.success({ content: "设置已安全保存", duration: 2 });
+      message.success("设置已安全保存", 2);
     } catch (error) {
       console.error("保存设置时出错:", error);
-      message.error({
-        content: error instanceof Error ? error.message : "保存设置失败",
-        duration: 3,
-      });
+      message.error(error instanceof Error ? error.message : "保存设置失败", 3);
     } finally {
       setSaving(false);
     }
@@ -175,10 +173,10 @@ const Settings: React.FC<SettingsProps> = () => {
             </select>
           </div>
         </form>
-      </div>
+      </BaseCard>
       <BaseCard variant="surface" size="lg" className="settings-card">
         <div className="card-header">
-          <GitIcon /> <h4>GitLab集成</h4>
+          <GitHubIcon /> <h4>GitLab集成</h4>
         </div>
         <form className="form">
           <div className="form-item">
@@ -213,8 +211,8 @@ const Settings: React.FC<SettingsProps> = () => {
             测试连接
           </button>
         </form>
-      </div>
-      <div className="card settings-card">
+      </BaseCard>
+      <BaseCard variant="surface" size="lg" className="settings-card">
         <div className="card-header">
           <h4>应用设置</h4>
         </div>
@@ -243,28 +241,28 @@ const Settings: React.FC<SettingsProps> = () => {
             </label>
           </div>
         </form>
-      </div>
-      // 替换保存按钮
+      </BaseCard>
+      {/* 保存按钮 */}
       <BaseButton variant="primary" onClick={saveSettings} disabled={saving}>
         <SaveIcon className="w-4 h-4 mr-2" />
         {saving ? "保存中..." : "保存设置"}
       </BaseButton>
-      // 替换GitLab连接卡片
+      {/* GitLab连接卡片 */}
       <BaseCard title="GitLab 集成" variant="surface" className="mb-6">
         <div className="space-y-4">
-          <Input
-            addonBefore={<GitHubIcon className="w-4 h-4" />}
+          <BaseInput
+            className="input-with-icon"
             placeholder="GitLab访问令牌"
             value={gitlabToken}
             onChange={(e) => setGitlabToken(e.target.value)}
           />
         </div>
       </BaseCard>
-      // 替换AI配置卡片
+      {/* AI配置卡片 */}
       <BaseCard title="AI 配置" variant="surface" className="mb-6">
         <div className="space-y-4">
-          <Input
-            addonBefore={<ApiIcon className="w-4 h-4" />}
+          <BaseInput
+            className="input-with-icon"
             placeholder="OpenAI API密钥"
             type="password"
             value={openaiApiKey}

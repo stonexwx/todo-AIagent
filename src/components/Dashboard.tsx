@@ -10,7 +10,7 @@ import BaseForm from "./common/BaseForm";
 import BaseModal from "./common/BaseModal";
 import BaseInput from "./common/BaseInput";
 import BaseTextArea from "./common/BaseTextArea";
-import BaseSelect from "./common/BaseSelect";
+import { BaseSelect } from "./common/BaseSelect";
 import { FireIcon, CheckCircleIcon, ClockIcon } from "@/assets/custom-icons";
 import dayjs from "dayjs";
 

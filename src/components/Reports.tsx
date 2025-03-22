@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import dayjs from "dayjs";
-import BaseTabs from "./common/BaseTabs";
 import BaseRadio from "./common/BaseRadio";
 import BaseDropdown from "./common/BaseDropdown";
 import BaseSpinner from "./common/BaseSpinner";
 import BaseButton from "./common/BaseButton";
 import BaseCard from "./common/BaseCard";
+import BaseInput from "./common/BaseInput";
+import BaseDateCell from "./common/BaseDateCell";
 import { message } from "./common/Message";
+import { Tabs as BaseTabs, Tab, TabPanel } from "./common/BaseTabs";
 import {
   FireIcon,
   ChartPieIcon,
   ClockIcon,
   CheckCircleIcon,
 } from "@/assets/custom-icons";
-
-<BaseTabs defaultActiveKey="1">
-          <BaseTabs.Tab
 
 interface Task {
   id: string;
@@ -38,6 +37,8 @@ const Reports: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
     null
   );
+  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [reportContent, setReportContent] = useState<string>("");
   const [apiKey, setApiKey] = useState<string>("");
@@ -250,46 +251,54 @@ ${taskSummary}
         title="工作报告生成"
         icon={<ChartPieIcon className="w-6 h-6" />}
       >
-        <Tabs defaultActiveKey="1">
-          <TabPane
-            tab={
-              <span>
-                <FireIcon className="inline-block w-4 h-4 mr-2" />
-                报告生成
-              </span>
-            }
-            key="1"
-          >
+        <BaseTabs defaultActiveTab="1">
+          <Tab tabId="1" aria-label="报告生成">
+            <span>
+              <FireIcon className="inline-block w-4 h-4 mr-2" />
+              报告生成
+            </span>
+          </Tab>
+          <Tab tabId="2" aria-label="设置">
+            <span>
+              <ClockIcon className="inline-block w-4 h-4 mr-2" />
+              设置
+            </span>
+          </Tab>
+          <TabPanel id="1">
             <div className="space-y-4">
               <div>
                 <BaseRadio.Group
                   value={reportType}
-                  onChange={(e) => setReportType(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setReportType(e.target.value as ReportType)
+                  }
                   className="mb-4"
                 >
-                  <BaseRadio.Button value="daily">日报</Radio.Button>
-                  <BaseRadio.Button value="weekly">周报</Radio.Button>
-                  <BaseRadio.Button value="monthly">月报</Radio.Button>
-                  <BaseRadio.Button value="yearly">年报</Radio.Button>
-                  <BaseRadio.Button value="custom">自定义</Radio.Button>
+                  <BaseRadio.Button value="daily">日报</BaseRadio.Button>
+                  <BaseRadio.Button value="weekly">周报</BaseRadio.Button>
+                  <BaseRadio.Button value="monthly">月报</BaseRadio.Button>
+                  <BaseRadio.Button value="yearly">年报</BaseRadio.Button>
+                  <BaseRadio.Button value="custom">自定义</BaseRadio.Button>
                 </BaseRadio.Group>
 
                 {reportType === "custom" && (
                   <div className="mt-2">
                     <div className="flex gap-2">
-                <BaseDateCell
-                  value={startDate}
-                  onChange={setStartDate}
-                  maxDate={endDate || dayjs()}
-                  placeholder="开始日期"
-                />
-                <BaseDateCell
-                  value={endDate}
-                  onChange={setEndDate}
-                  minDate={startDate}
-                  placeholder="结束日期"
-                />
-              </div>
+                      <BaseDateCell
+                        date={dayjs()}
+                        value={startDate}
+                        onChange={setStartDate}
+                        maxDate={endDate || dayjs()}
+                        placeholder="开始日期"
+                      />
+                      <BaseDateCell
+                        date={dayjs()}
+                        value={endDate}
+                        onChange={setEndDate}
+                        minDate={startDate}
+                        placeholder="结束日期"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -297,11 +306,13 @@ ${taskSummary}
               <div>
                 <BaseRadio.Group
                   value={reportFormat}
-                  onChange={(e) => setReportFormat(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setReportFormat(e.target.value as ReportFormat)
+                  }
                   className="mb-4"
                 >
-                  <BaseRadio.Button value="text">文本格式</Radio.Button>
-                  <BaseRadio.Button value="chart">图表格式</Radio.Button>
+                  <BaseRadio.Button value="text">文本格式</BaseRadio.Button>
+                  <BaseRadio.Button value="chart">图表格式</BaseRadio.Button>
                 </BaseRadio.Group>
               </div>
 
@@ -335,29 +346,21 @@ ${taskSummary}
                 </div>
               )}
             </div>
-          </BaseTabs.Tab>
-
-          <TabPane
-            tab={
-              <span>
-                <ClockIcon className="inline-block w-4 h-4 mr-2" />
-                设置
-              </span>
-            }
-            key="2"
-          >
+          </TabPanel>
+          <TabPanel id="2">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   OpenAI API Key
                 </label>
-                <Input.Password
+                <BaseInput
                   value={apiKey}
                   onChange={(e) => {
                     setApiKey(e.target.value);
                     localStorage.setItem("openai_api_key", e.target.value);
                   }}
                   placeholder="请输入您的OpenAI API密钥"
+                  className="w-full"
                 />
               </div>
 
@@ -367,20 +370,20 @@ ${taskSummary}
                 </label>
                 <BaseDropdown
                   value={aiModel}
-                  onChange={(value) => {
-                    setAiModel(value);
-                    localStorage.setItem("ai_model", value);
+                  onChange={(value: string | number) => {
+                    setAiModel(value.toString());
+                    localStorage.setItem("ai_model", value.toString());
                   }}
                   className="w-full"
                 >
                   <BaseDropdown.Option value="gpt-3.5-turbo">
                     GPT-3.5-Turbo
-                  </Select.Option>
-                  <BaseDropdown.Option value="gpt-4">GPT-4</Select.Option>
+                  </BaseDropdown.Option>
+                  <BaseDropdown.Option value="gpt-4">GPT-4</BaseDropdown.Option>
                 </BaseDropdown>
               </div>
             </div>
-          </BaseTabs.Tab>
+          </TabPanel>
         </BaseTabs>
       </BaseCard>
     </div>

@@ -1,20 +1,20 @@
 import React, { useRef } from "react";
 
-interface FormInstance {
+export interface FormInstance {
   getFieldValue: (field: string) => any;
   setFieldsValue: (values: any) => void;
   resetFields: () => void;
   validateFields: () => Promise<any>;
 }
 
-interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+export interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
   layout?: "horizontal" | "vertical";
   loading?: boolean;
   error?: string;
   form?: FormInstance;
 }
 
-interface FormItemProps {
+export interface FormItemProps {
   name?: string;
   label?: string;
   rules?: Array<{ required?: boolean; message?: string }>;
@@ -22,7 +22,7 @@ interface FormItemProps {
 }
 
 // 扩展React.FC类型，添加静态属性
-interface BaseFormComponent extends React.FC<FormProps> {
+export interface BaseFormComponent extends React.FC<FormProps> {
   useForm: () => [FormInstance];
   Item: React.FC<FormItemProps>;
 }

@@ -8,8 +8,12 @@ import {
   Plus,
   Edit,
   Trash2,
-  Check
-} from 'lucide-react';
+  Check,
+  Save,
+  Api,
+} from "lucide-react";
+
+import { siGithub } from "simple-icons";
 
 export {
   ChevronLeft,
@@ -21,5 +25,8 @@ export {
   Plus as PlusIcon,
   Edit as EditIcon,
   Trash2 as DeleteIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  Save as SaveIcon,
+  Api as ApiIcon,
+  siGithub as GitHubIcon,
 };
